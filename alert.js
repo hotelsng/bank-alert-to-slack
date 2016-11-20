@@ -5,6 +5,7 @@
 var slackBotUsername = 'Finance';
 var slackChannel     = '#notifications';
 var slackToken       = 'YOUR-SLACK-TOKEN-HERE';
+var crossCheckApi    = 'http://cross-check-endpoint-url.com/';
 
 
 /**
@@ -14,7 +15,7 @@ var slackToken       = 'YOUR-SLACK-TOKEN-HERE';
  * @return {void}
  */
 function sendSlackNotification(message){
-  message = message || "*Testing Finance Notifications*";
+  message = message || "*Testing Notifications*";
   var response = UrlFetchApp.fetch("https://slack.com/api/chat.postMessage?", {
     method:"POST",
     payload:{
@@ -107,10 +108,9 @@ function mainFunction() {
      * @return {void}
      */
     function sendToEndpoint(payload) {
-        var response = UrlFetchApp.fetch("http://finance.place/api/logalert",{
-            method:"POST",
-            payload:{data:JSON.stringify(payload.data)}
-        });
+        payload = {data:JSON.stringify(payload.data)};
+
+        var response = UrlFetchApp.fetch(crossCheckApi, {method:"POST", payload:payload});
 
         var slackMessage   = "";
         var upsertedAlerts = JSON.parse(response.getContentText());
@@ -119,7 +119,7 @@ function mainFunction() {
             slackMessage += generateSlackMessage(ualert);
         });
 
-        if (slackMessage.length > 1) {
+        if (slackMessage.length >= 1) {
             sendSlackNotification(slackMessage);
         }
     }
